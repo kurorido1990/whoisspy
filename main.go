@@ -25,5 +25,5 @@ func main() {
 			"message" : "pong",
 		})
 	})
-	server.Run(":8888")
+	server.Run()
 }
