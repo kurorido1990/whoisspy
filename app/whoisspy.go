@@ -3,6 +3,7 @@ package app
 import (
 	"encoding/json"
 	"github.com/bwmarrin/snowflake"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"math/rand"
 	"net/http"
@@ -24,6 +25,7 @@ func test(c *gin.Context) {
 
 func Run() {
 	server := gin.Default()
+	server.Use(cors.Default())
 	server.LoadHTMLGlob("app/template/*")
 	server.GET("/", test)
 	server.GET("/ping", func(c *gin.Context) {
@@ -52,8 +54,8 @@ func Run() {
 	initRoomList()
 	initSnowflake()
 	initGen()
-	server.Run(":9999")
-	//server.Run()
+	//server.Run(":9999")
+	server.Run()
 }
 
 func initSnowflake() {
