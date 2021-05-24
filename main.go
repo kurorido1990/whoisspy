@@ -91,6 +91,16 @@ var topic = map[int][]string {
 	},
 }
 
+var spyNum = map[int]int {
+	8:1,
+	9:2,
+	16:3,
+	20:4,
+}
+
+var winRule = map[int]
+
+
 type IndexData struct {
 	Title   string
 	Content string
