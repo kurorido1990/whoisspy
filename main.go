@@ -98,7 +98,7 @@ var spyNum = map[int]int {
 	20:4,
 }
 
-var winRule = map[int]
+//var winRule = map[int]
 
 
 type IndexData struct {
