@@ -2,11 +2,10 @@ package app
 
 import (
 	"fmt"
-	"sync"
 )
 
 type Room struct {
-	ID         int64
+	ID         string
 	Status     int
 	TopicIndex int
 	MaxLimit   int
@@ -16,13 +15,9 @@ type Room struct {
 	Spy        []*Player
 }
 
-func createRoom(maxLimit int) int64 {
-	if roomList == nil {
-		roomList = &sync.Map{}
-	}
-
+func createRoom(maxLimit int) string {
 	room := &Room{
-		ID:         node.Generate().Int64(),
+		ID:         node.Generate().String(),
 		Status:     RoomStatusPrepare,
 		TopicIndex: getTopicIndex(),
 		MaxLimit:   maxLimit,
@@ -47,17 +42,16 @@ func (r *Room) addPlayer(player *Player) error {
 	}
 
 	topicList := getTopic(r.TopicIndex)
-
 	switch gen.Identity() {
 	case CITIZEN:
-		if r.isNum(0)-r.isNum(SPY) == r.isNum(CITIZEN) {
-			r.Spy = append(r.Spy, player)
-			player.Identity = SPY
-			player.Topic = topicList[SPY-1]
-		} else {
+		if r.MaxLimit-r.isNum(CITIZEN) > r.SpyNum {
 			r.Citizens = append(r.Citizens, player)
 			player.Identity = CITIZEN
 			player.Topic = topicList[CITIZEN-1]
+		} else {
+			r.Spy = append(r.Spy, player)
+			player.Identity = SPY
+			player.Topic = topicList[SPY-1]
 		}
 	case SPY:
 		if r.SpyNum == r.isNum(SPY) {
@@ -95,7 +89,7 @@ func (r *Room) isMax() bool {
 	}
 }
 
-func (r *Room) kickPlayer(playerID int64) {
+func (r *Room) kickPlayer(playerID string) {
 	for _, player := range r.Players {
 		if playerID == player.ID {
 			player.Dead = true

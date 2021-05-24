@@ -10,7 +10,7 @@ type Generator struct {
 }
 
 func (generator *Generator) Identity() int {
-	vales := []int{0, 1}
+	vales := []int{1, 2}
 	length := len(vales)
 
 	return vales[generator.rand.Intn(length)]

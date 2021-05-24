@@ -1,7 +1,7 @@
 package app
 
 import (
-	"fmt"
+	"encoding/json"
 	"github.com/bwmarrin/snowflake"
 	"github.com/gin-gonic/gin"
 	"math/rand"
@@ -13,7 +13,7 @@ import (
 
 var gen Generator
 var node *snowflake.Node
-var roomList *sync.Map
+var roomList sync.Map
 
 func test(c *gin.Context) {
 	data := new(IndexData)
@@ -32,29 +32,28 @@ func Run() {
 		})
 	})
 
-	server.GET("/newRoom", newRoom)
 	server.GET("/createRoom/:maxLimit", func(ctx *gin.Context) {
 		maxLimit, _ := strconv.ParseInt(ctx.Params.ByName("maxLimit"), 10, 64)
 
 		roomID := createRoom(int(maxLimit))
 
 		ctx.JSON(Status_OK, gin.H{
-			"addPlayer":   fmt.Sprintf("https://www.herokuapp.com/newPlayer/%d", roomID),
-			"monitorRoom": fmt.Sprintf("https://www.herokuapp.com/room/%d", roomID),
+			"roomID": roomID,
 		})
 	})
 
-	server.GET("/newPlayer/:roomID", newPlayer)
 	server.GET("/addPlayer/:roomID/:name", addPlayer)
+	server.GET("/getCard/:roomID/:playerID", getCard)
 
 	server.GET("/room/:roomID/:playerID", gamePage)
 
 	server.GET("/kick/:roomID/:playerID", kickPlayer)
 
+	initRoomList()
 	initSnowflake()
 	initGen()
-	//server.Run(":9999")
-	server.Run()
+	server.Run(":9999")
+	//server.Run()
 }
 
 func initSnowflake() {
@@ -65,26 +64,17 @@ func initSnowflake() {
 	}
 }
 
+func initRoomList() {
+	roomList = sync.Map{}
+}
+
 func initGen() {
 	gen = CreateGen()
 }
 
-func newRoom(ctx *gin.Context) {
-	ctx.HTML(http.StatusOK, "newRoom.html", nil)
-}
-
-func newPlayer(ctx *gin.Context) {
-	roomID, _ := strconv.ParseInt(ctx.Params.ByName("roomID"), 10, 64)
-	ctx.HTML(http.StatusOK, "newPlayer.html", struct {
-		RoomID int64
-	}{
-		RoomID: roomID,
-	})
-}
-
 func kickPlayer(ctx *gin.Context) {
-	roomID, _ := strconv.ParseInt(ctx.Params.ByName("roomID"), 10, 64)
-	playerID, _ := strconv.ParseInt(ctx.Params.ByName("playerID"), 10, 64)
+	roomID := ctx.Params.ByName("roomID")
+	playerID := ctx.Params.ByName("playerID")
 
 	if room := getRoom(roomID); room != nil {
 		room.kickPlayer(playerID)
@@ -94,8 +84,8 @@ func kickPlayer(ctx *gin.Context) {
 }
 
 func gamePage(ctx *gin.Context) {
-	roomID, _ := strconv.ParseInt(ctx.Params.ByName("roomID"), 10, 64)
-	playerID, _ := strconv.ParseInt(ctx.Params.ByName("playerID"), 10, 64)
+	roomID := ctx.Params.ByName("roomID")
+	playerID := ctx.Params.ByName("playerID")
 
 	if room := getRoom(roomID); room != nil {
 		if room.Status == RoomStatusEnd {
@@ -107,7 +97,7 @@ func gamePage(ctx *gin.Context) {
 			for _, player := range room.Players {
 				if playerID == player.ID {
 					ctx.HTML(http.StatusOK, "playing.html", struct {
-						PlayerID int64
+						PlayerID string
 						Topic    string
 						Room     *Room
 					}{
@@ -131,7 +121,7 @@ func gamePage(ctx *gin.Context) {
 			for _, player := range room.Players {
 				if playerID == player.ID {
 					ctx.HTML(http.StatusOK, "ready.html", struct {
-						PlayerID int64
+						PlayerID string
 						Topic    string
 						Room     *Room
 					}{
@@ -150,19 +140,19 @@ func gamePage(ctx *gin.Context) {
 }
 
 func addPlayer(ctx *gin.Context) {
-	roomID, _ := strconv.ParseInt(ctx.Params.ByName("roomID"), 10, 64)
+	roomID := ctx.Params.ByName("roomID")
 	name := ctx.Params.ByName("name")
 
 	if room := getRoom(roomID); room != nil {
 		player := CreatePlayer(name)
 		if err := room.addPlayer(player); err != nil {
-			ctx.JSON(400, err)
+			ctx.JSON(400, "人數已滿")
 			return
 		}
 
 		ctx.JSON(Status_OK, struct {
-			PlayerID int64  `json:"player_id"`
-			Topic    string `json:"topic"`
+			PlayerID string
+			Topic    string
 		}{
 			PlayerID: player.ID,
 			Topic:    player.Topic,
@@ -170,11 +160,33 @@ func addPlayer(ctx *gin.Context) {
 		return
 	}
 
-	ctx.HTML(http.StatusOK, "error.html", nil)
-	return
+	ctx.JSON(400, "不明原因壞了")
 }
 
-func getRoom(roomID int64) *Room {
+func getCard(ctx *gin.Context) {
+	roomID := ctx.Params.ByName("roomID")
+	playerID := ctx.Params.ByName("playerID")
+
+	if room := getRoom(roomID); room != nil {
+		for _, player := range room.Players {
+			if playerID == player.ID {
+				byteRoom, _ := json.Marshal(room)
+				ctx.JSON(http.StatusOK, struct {
+					PlayerID string
+					Topic    string
+					Room     string
+				}{
+					PlayerID: player.ID,
+					Topic:    player.Topic,
+					Room:     string(byteRoom),
+				})
+				return
+			}
+		}
+	}
+}
+
+func getRoom(roomID string) *Room {
 	if val, ok := roomList.Load(roomID); ok {
 		room := val.(*Room)
 		return room
@@ -183,7 +195,7 @@ func getRoom(roomID int64) *Room {
 	return nil
 }
 
-func gameStart(roomID int64) {
+func gameStart(roomID string) {
 	if room := getRoom(roomID); room != nil {
 		room.start()
 	}

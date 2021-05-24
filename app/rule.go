@@ -1,7 +1,7 @@
 package app
 
 var spyNum = map[int]int{
-	8:  1,
+	6:  1,
 	9:  2,
 	16: 3,
 	20: 4,
@@ -10,9 +10,9 @@ var spyNum = map[int]int{
 func getSpyNum(num int) int {
 	currentSpyNum := 1
 
-	for playerNum, spyNum := range spyNum {
-		if playerNum >= num {
-			currentSpyNum = spyNum
+	for playerNum, spyLimit := range spyNum {
+		if playerNum <= num {
+			currentSpyNum = spyLimit
 			continue
 		} else {
 			return currentSpyNum
