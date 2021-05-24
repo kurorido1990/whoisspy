@@ -111,3 +111,18 @@ func (r *Room) settlement() int {
 
 	return Result_Continue
 }
+
+func (r *Room) resetGame() {
+	playerList := r.Players
+	r.TopicIndex = getTopicIndex()
+	r.Status = Result_Continue
+
+	r.Players = make([]*Player, 0)
+	r.Spy = make([]*Player, 0)
+	r.Citizens = make([]*Player, 0)
+
+	for _, player := range playerList {
+		player.reset()
+		r.addPlayer(player)
+	}
+}

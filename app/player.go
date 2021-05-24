@@ -19,3 +19,9 @@ func CreatePlayer(name string) *Player {
 
 	return player
 }
+
+func (p *Player) reset() {
+	p.Dead = false
+	p.Topic = ""
+	p.Identity = 0
+}

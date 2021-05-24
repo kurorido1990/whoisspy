@@ -48,6 +48,18 @@ func Run() {
 	server.GET("/getCard/:roomID/:playerID", getCard)
 
 	server.GET("/room/:roomID/:playerID", gamePage)
+	server.GET("/resetRoom/:roomID", func(ctx *gin.Context) {
+		roomID := ctx.Params.ByName("roomID")
+
+		if room := getRoom(roomID); room != nil {
+			room.resetGame()
+
+			ctx.JSON(Status_OK, nil)
+			return
+		}
+
+		ctx.JSON(400, "不明原因壞了")
+	})
 
 	server.GET("/kick/:roomID/:playerID", kickPlayer)
 
