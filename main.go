@@ -22,7 +22,7 @@ func test(c *gin.Context) {
 func main() {
 	server := gin.Default()
 	server.LoadHTMLGlob("template/*")
-	server.GET("/")
+	server.GET("/", test)
 	server.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message" : "pong",
