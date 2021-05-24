@@ -1,4 +1,4 @@
-package whoisspy
+package app
 
 type Player struct {
 	ID       int64

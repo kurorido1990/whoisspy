@@ -1,4 +1,4 @@
-package whoisspy
+package app
 
 var topic = map[int][]string{
 	1:  {"ipad", "iphone"},

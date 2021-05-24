@@ -1,4 +1,4 @@
-package whoisspy
+package app
 
 import (
 	"math/rand"

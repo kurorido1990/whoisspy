@@ -1,4 +1,4 @@
-module heroku
+module whoisspy
 
 go 1.16
 

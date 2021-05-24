@@ -1,4 +1,4 @@
-package whoisspy
+package app
 
 var spyNum = map[int]int{
 	8:  1,

@@ -1,4 +1,4 @@
-package whoisspy
+package app
 
 type IndexData struct {
 	Title   string

@@ -1,4 +1,4 @@
-package whoisspy
+package app
 
 const (
 	Status_OK = 200
