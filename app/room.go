@@ -47,6 +47,10 @@ func (r *Room) addPlayer(player *Player) error {
 		return fmt.Errorf("人數已滿")
 	}
 
+	if player.Name == "" {
+		return fmt.Errorf("名字不能為空")
+	}
+
 	for _, p := range r.Players {
 		if p.Name == player.Name {
 			return fmt.Errorf("名字重複")
