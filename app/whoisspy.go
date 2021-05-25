@@ -96,7 +96,7 @@ func Run() {
 		if room := getRoom(roomID); room != nil {
 			for _, player := range room.Players {
 				if playerID == player.ID {
-					if !player.Vote {
+					if !player.Speak {
 						player.Speak = true
 						room.playerSpeak()
 						break
