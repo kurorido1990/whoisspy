@@ -47,7 +47,7 @@ func Run() {
 	server.GET("/addPlayer/:roomID/:name", addPlayer)
 	server.GET("/getCard/:roomID/:playerID", getCard)
 
-	server.GET("monitor", func(ctx *gin.Context) {
+	server.GET("/monitor", func(ctx *gin.Context) {
 		ctx.JSON(Status_OK, roomList)
 	})
 	server.GET("/room/:roomID/:playerID", gamePage)
