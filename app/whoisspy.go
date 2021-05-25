@@ -43,6 +43,11 @@ func Run() {
 	server.GET("/createRoom/:maxLimit", func(ctx *gin.Context) {
 		maxLimit, _ := strconv.ParseInt(ctx.Params.ByName("maxLimit"), 10, 64)
 
+		if maxLimit < 4 {
+			ctx.JSON(400, "人數太少")
+			return
+		}
+
 		roomID := createRoom(int(maxLimit))
 
 		ctx.JSON(Status_OK, gin.H{
@@ -238,7 +243,7 @@ func addPlayer(ctx *gin.Context) {
 	if room := getRoom(roomID); room != nil {
 		player := CreatePlayer(name)
 		if err := room.addPlayer(player); err != nil {
-			ctx.JSON(400, "人數已滿")
+			ctx.JSON(400, err)
 			return
 		}
 

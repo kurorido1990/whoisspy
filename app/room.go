@@ -42,7 +42,13 @@ func (r *Room) start() {
 
 func (r *Room) addPlayer(player *Player) error {
 	if r.isMax() {
-		return fmt.Errorf("RoomID : %d 人數已滿", r.ID)
+		return fmt.Errorf("人數已滿")
+	}
+
+	for _, p := range r.Players {
+		if p.Name == player.Name {
+			return fmt.Errorf("名字重複")
+		}
 	}
 
 	topicList := getTopic(r.TopicIndex)
@@ -185,7 +191,7 @@ func (r *Room) settlement() {
 	if r.getAliveSpy() < 1 {
 		r.Status = RoomStatusEnd
 		winner = Result_CITIZEN_WIN
-	} else if r.isNum(0) <= winNum {
+	} else if len(r.getAlivePlayer()) <= winNum {
 		r.Status = RoomStatusEnd
 		winner = Result_SPY_WIN
 	}
