@@ -151,8 +151,6 @@ func Run() {
 		ctx.JSON(400, "不明原因壞了")
 	})
 
-	server.GET("/kick/:roomID/:playerID", kickPlayer)
-
 	initRoomList()
 	initSnowflake()
 	initGen()
@@ -174,17 +172,6 @@ func initRoomList() {
 
 func initGen() {
 	gen = CreateGen()
-}
-
-func kickPlayer(ctx *gin.Context) {
-	roomID := ctx.Params.ByName("roomID")
-	playerID := ctx.Params.ByName("playerID")
-
-	if room := getRoom(roomID); room != nil {
-		room.kickPlayer(playerID)
-	}
-
-	ctx.JSON(Status_OK, nil)
 }
 
 func gamePage(ctx *gin.Context) {
