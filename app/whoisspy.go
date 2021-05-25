@@ -47,6 +47,9 @@ func Run() {
 	server.GET("/addPlayer/:roomID/:name", addPlayer)
 	server.GET("/getCard/:roomID/:playerID", getCard)
 
+	server.GET("monitor", func(ctx *gin.Context) {
+		ctx.JSON(Status_OK, roomList)
+	})
 	server.GET("/room/:roomID/:playerID", gamePage)
 	server.GET("/resetRoom/:roomID", func(ctx *gin.Context) {
 		roomID := ctx.Params.ByName("roomID")
@@ -188,10 +191,12 @@ func getCard(ctx *gin.Context) {
 				ctx.JSON(http.StatusOK, struct {
 					PlayerID string
 					Topic    string
+					Dead     bool
 					Room     string
 				}{
 					PlayerID: player.ID,
 					Topic:    player.Topic,
+					Dead:     player.Dead,
 					Room:     string(byteRoom),
 				})
 				return
