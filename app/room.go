@@ -185,6 +185,8 @@ func (r *Room) settlement() {
 		for _, player := range r.Players {
 			player.settlement(winner)
 		}
+
+		r.resetGame()
 	}
 }
 
