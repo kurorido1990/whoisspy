@@ -68,7 +68,7 @@ func Run() {
 			if room.Gambling {
 				for _, player := range room.Players {
 					if playerID == player.ID {
-						if player.alive() && !player.Vote {
+						if !player.Vote {
 							player.Vote = true
 							room.votePlayer(voteID)
 							break
