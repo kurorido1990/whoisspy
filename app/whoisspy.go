@@ -48,7 +48,17 @@ func Run() {
 	server.GET("/getCard/:roomID/:playerID", getCard)
 
 	server.GET("/monitor", func(ctx *gin.Context) {
-		byteRoomList, _ := json.Marshal(roomList)
+		var tmpRoom []*Room
+
+		roomList.Range(func(key, value interface{}) bool {
+			if value != nil {
+				tmpRoom = append(tmpRoom, value.(*Room))
+			}
+
+			return true
+		})
+
+		byteRoomList, _ := json.Marshal(tmpRoom)
 		ctx.JSON(http.StatusOK, struct {
 			RoomList string
 		}{
