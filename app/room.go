@@ -94,10 +94,9 @@ func (r *Room) isMax() bool {
 }
 
 func (r *Room) startGambling() {
-	for _, player := range r.Players {
-		if player.alive() {
-			player.startGambling(r.getAlivePlayer())
-		}
+	alivePlayer := r.getAlivePlayer()
+	for _, player := range alivePlayer {
+		player.startGambling(alivePlayer)
 	}
 }
 
