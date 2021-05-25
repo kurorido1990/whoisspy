@@ -18,13 +18,6 @@ var gen Generator
 var node *snowflake.Node
 var roomList sync.Map
 
-func test(c *gin.Context) {
-	data := new(IndexData)
-	data.Title = "首頁"
-	data.Content = "我的第一個首頁"
-	c.HTML(http.StatusOK, "index.html", data)
-}
-
 func Run() {
 	up := &websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool { return true },
@@ -32,8 +25,6 @@ func Run() {
 
 	server := gin.Default()
 	server.Use(cors.Default())
-	server.LoadHTMLGlob("app/template/*")
-	server.GET("/", test)
 	server.GET("/ping", func(c *gin.Context) {
 		c.JSON(Status_OK, gin.H{
 			"message": "pong",
