@@ -6,14 +6,15 @@ import (
 )
 
 type Player struct {
-	ID       string
-	Name     string
-	Identity int
-	Topic    string
-	Dead     bool
-	Ticket   int
-	Vote     bool
-	ws       *websocket.Conn
+	ID             string
+	Name           string
+	Identity       int
+	Topic          string
+	Dead           bool
+	Ticket         int
+	Vote           bool
+	reconnectQueue [][]byte
+	ws             *websocket.Conn
 }
 
 func CreatePlayer(name string) *Player {
@@ -56,35 +57,53 @@ func (p *Player) resetTicket() {
 	p.Ticket = 0
 }
 
-func (p *Player) startGambling(playerList []*Player) {
-	if p.ws != nil {
-		data, _ := json.Marshal(WsData{
-			Cmd:  "startGambling",
-			Data: playerList,
-		})
+func (p *Player) pushLoseMsg() {
+	success := 0
+	for _, data := range p.reconnectQueue {
+		if p.ws != nil {
+			success++
+			p.ws.WriteMessage(websocket.TextMessage, data)
+		}
+	}
 
+	p.reconnectQueue = p.reconnectQueue[success:len(p.reconnectQueue)]
+}
+
+func (p *Player) startGambling(playerList []*Player) {
+	data, _ := json.Marshal(WsData{
+		Cmd:  "startGambling",
+		Data: playerList,
+	})
+
+	if p.ws != nil {
 		p.ws.WriteMessage(websocket.TextMessage, data)
+	} else {
+		p.reconnectQueue = append(p.reconnectQueue, data)
 	}
 }
 
 func (p *Player) kickPlayer(kickPlayerName string) {
-	if p.ws != nil {
-		data, _ := json.Marshal(WsData{
-			Cmd:  "kickPlayer",
-			Data: kickPlayerName,
-		})
+	data, _ := json.Marshal(WsData{
+		Cmd:  "kickPlayer",
+		Data: kickPlayerName,
+	})
 
+	if p.ws != nil {
 		p.ws.WriteMessage(websocket.TextMessage, data)
+	} else {
+		p.reconnectQueue = append(p.reconnectQueue, data)
 	}
 }
 
 func (p *Player) settlement(winner int) {
-	if p.ws != nil {
-		data, _ := json.Marshal(WsData{
-			Cmd:  "settlement",
-			Data: winner,
-		})
+	data, _ := json.Marshal(WsData{
+		Cmd:  "settlement",
+		Data: winner,
+	})
 
+	if p.ws != nil {
 		p.ws.WriteMessage(websocket.TextMessage, data)
+	} else {
+		p.reconnectQueue = append(p.reconnectQueue, data)
 	}
 }

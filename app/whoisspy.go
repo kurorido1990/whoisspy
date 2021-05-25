@@ -105,6 +105,7 @@ func Run() {
 			for _, player := range room.Players {
 				if playerID == player.ID {
 					player.ws = c
+					player.pushLoseMsg()
 					break
 				}
 			}
