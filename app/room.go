@@ -169,9 +169,20 @@ func (r *Room) resetPlayerVote() {
 	}
 }
 
+func (r *Room) getAliveSpy() int {
+	alive := 0
+	for _, player := range r.getAlivePlayer() {
+		if player.Identity == SPY {
+			alive++
+		}
+	}
+
+	return alive
+}
+
 func (r *Room) settlement() {
 	winner := 0
-	if r.isNum(SPY) < 1 {
+	if r.getAliveSpy() < 1 {
 		r.Status = RoomStatusEnd
 		winner = Result_CITIZEN_WIN
 	} else if r.isNum(0) <= winNum {
