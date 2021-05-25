@@ -50,6 +50,41 @@ func Run() {
 		})
 	})
 
+	server.GET("/startVote/:roomID", func(ctx *gin.Context) {
+		roomID := ctx.Params.ByName("roomID")
+		if room := getRoom(roomID); room != nil {
+			room.startGambling()
+			ctx.JSON(200, "投票通道開啟")
+		} else {
+			ctx.JSON(400, "不知名的原因")
+		}
+	})
+
+	server.GET("/vote/:roomID/:playerID/:voteID", func(ctx *gin.Context) {
+		roomID := ctx.Params.ByName("roomID")
+		playerID := ctx.Params.ByName("playerID")
+		voteID := ctx.Params.ByName("voteID")
+		if room := getRoom(roomID); room != nil {
+			if room.Gambling {
+				for _, player := range room.Players {
+					if playerID == player.ID {
+						if player.alive() && !player.Vote {
+							player.Vote = true
+							room.votePlayer(voteID)
+							break
+						}
+					}
+				}
+
+				ctx.JSON(Status_OK, "投票完成")
+			} else {
+				ctx.JSON(Status_OK, "投票已關閉")
+			}
+		} else {
+			ctx.JSON(400, "不知名的原因")
+		}
+	})
+
 	server.GET("/addPlayer/:roomID/:name", addPlayer)
 	server.GET("/getCard/:roomID/:playerID", getCard)
 	server.GET("/ws/:roomID/:playerID", func(ctx *gin.Context) {

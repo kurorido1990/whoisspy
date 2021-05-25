@@ -10,6 +10,8 @@ type Room struct {
 	TopicIndex int
 	MaxLimit   int
 	SpyNum     int
+	Gambling   bool
+	Ticket     int
 	Players    []*Player
 	Citizens   []*Player
 	Spy        []*Player
@@ -19,6 +21,8 @@ func createRoom(maxLimit int) string {
 	room := &Room{
 		ID:         node.Generate().String(),
 		Status:     RoomStatusPrepare,
+		Gambling:   false,
+		Ticket:     0,
 		TopicIndex: getTopicIndex(),
 		MaxLimit:   maxLimit,
 		SpyNum:     getSpyNum(maxLimit),
@@ -89,33 +93,106 @@ func (r *Room) isMax() bool {
 	}
 }
 
-func (r *Room) kickPlayer(playerID string) {
+func (r *Room) startGambling() {
 	for _, player := range r.Players {
-		if playerID == player.ID {
-			player.Dead = true
-			return
+		if player.alive() {
+			player.startGambling(r.getAlivePlayer())
 		}
 	}
 }
 
-func (r *Room) settlement() int {
+func (r *Room) votePlayer(playerID string) {
+	for _, player := range r.Players {
+		if playerID == player.ID {
+			player.Ticket++
+			r.Ticket++
+			break
+		}
+	}
+
+	if r.Ticket == len(r.getAlivePlayer()) {
+		r.stopGambling()
+	}
+}
+
+func (r *Room) stopGambling() {
+	r.Gambling = false
+	r.Ticket = 0
+	playerID := ""
+	topTicket := 0
+	for _, player := range r.getAlivePlayer() {
+		if player.Ticket > 0 {
+			if player.Ticket > topTicket {
+				playerID = player.ID
+				topTicket = player.Ticket
+			}
+		}
+	}
+
+	if playerID != "" {
+		r.kickPlayer(playerID)
+	}
+}
+
+func (r *Room) getAlivePlayer() []*Player {
+	alivePlayer := make([]*Player, 0)
+	for _, player := range r.Players {
+		if player.alive() {
+			alivePlayer = append(alivePlayer, player)
+		}
+	}
+
+	return alivePlayer
+}
+
+func (r *Room) kickPlayer(playerID string) {
+	var kickPlayerName string
+	for _, player := range r.Players {
+		if playerID == player.ID {
+			player.Dead = true
+			kickPlayerName = player.Name
+			return
+		}
+	}
+
+	for _, player := range r.Players {
+		player.kickPlayer(kickPlayerName)
+	}
+
+	r.settlement()
+}
+
+func (r *Room) resetPlayerVote() {
+	for _, player := range r.Players {
+		player.resetTicket()
+	}
+}
+
+func (r *Room) settlement() {
+	winner := 0
 	if r.isNum(SPY) < 1 {
 		r.Status = RoomStatusEnd
-		return Result_CITIZEN_WIN
-	}
-
-	if r.isNum(0) <= winNum {
+		winner = Result_CITIZEN_WIN
+	} else if r.isNum(0) <= winNum {
 		r.Status = RoomStatusEnd
-		return Result_SPY_WIN
+		winner = Result_SPY_WIN
 	}
 
-	return Result_Continue
+	if winner < 1 {
+		r.resetPlayerVote()
+	} else {
+		for _, player := range r.Players {
+			player.settlement(winner)
+		}
+	}
 }
 
 func (r *Room) resetGame() {
 	playerList := r.Players
 	r.TopicIndex = getTopicIndex()
 	r.Status = Result_Continue
+	r.Gambling = false
+	r.Ticket = 0
 
 	r.Players = make([]*Player, 0)
 	r.Spy = make([]*Player, 0)
