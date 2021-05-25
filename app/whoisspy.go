@@ -5,6 +5,8 @@ import (
 	"github.com/bwmarrin/snowflake"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
+	"log"
 	"math/rand"
 	"net/http"
 	"reflect"
@@ -24,6 +26,10 @@ func test(c *gin.Context) {
 }
 
 func Run() {
+	up := &websocket.Upgrader{
+		CheckOrigin: func(r *http.Request) bool { return true },
+	}
+
 	server := gin.Default()
 	server.Use(cors.Default())
 	server.LoadHTMLGlob("app/template/*")
@@ -46,6 +52,37 @@ func Run() {
 
 	server.GET("/addPlayer/:roomID/:name", addPlayer)
 	server.GET("/getCard/:roomID/:playerID", getCard)
+	server.GET("/ws/:roomID/:playerID", func(ctx *gin.Context) {
+		c, err := up.Upgrade(ctx.Writer, ctx.Request, nil)
+		if err != nil {
+			log.Println("upgrade :", err)
+			return
+		}
+
+		defer func() {
+			log.Println("disconnect!!")
+			c.Close()
+		}()
+
+		roomID := ctx.Params.ByName("roomID")
+		playerID := ctx.Params.ByName("playerID")
+		if room := getRoom(roomID); room != nil {
+			for _, player := range room.Players {
+				if playerID == player.ID {
+					player.ws = c
+					break
+				}
+			}
+		} else {
+			ctx.JSON(400, "不知名的原因")
+		}
+
+		stop := make(chan struct{})
+		select {
+		case <-stop:
+			return
+		}
+	})
 
 	server.GET("/monitor", func(ctx *gin.Context) {
 		var tmpRoom []*Room
