@@ -90,6 +90,26 @@ func Run() {
 		}
 	})
 
+	server.GET("/speak/:roomID/:playerID", func(ctx *gin.Context) {
+		roomID := ctx.Params.ByName("roomID")
+		playerID := ctx.Params.ByName("playerID")
+		if room := getRoom(roomID); room != nil {
+			for _, player := range room.Players {
+				if playerID == player.ID {
+					if !player.Vote {
+						player.Speak = true
+						room.playerSpeak()
+						break
+					}
+				}
+			}
+
+			ctx.JSON(Status_OK, "發言完畢")
+		} else {
+			ctx.JSON(400, "不知名的原因")
+		}
+	})
+
 	server.GET("/addPlayer/:roomID/:name", addPlayer)
 	server.GET("/getCard/:roomID/:playerID", getCard)
 	server.GET("/ws/:roomID/:playerID", func(ctx *gin.Context) {

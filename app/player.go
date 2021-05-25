@@ -13,6 +13,7 @@ type Player struct {
 	Dead           bool
 	Ticket         int
 	Vote           bool
+	Speak          bool
 	reconnectQueue [][]byte
 	ws             *websocket.Conn
 }
@@ -24,9 +25,9 @@ func CreatePlayer(name string) *Player {
 		Identity: 0,
 		Topic:    "",
 		Dead:     false,
-
-		Ticket: 0,
-		Vote:   false,
+		Speak:    false,
+		Ticket:   0,
+		Vote:     false,
 	}
 
 	return player
@@ -37,6 +38,7 @@ func (p *Player) reset() {
 	p.Topic = ""
 	p.Identity = 0
 	p.resetTicket()
+	p.resetSpeak()
 
 	if p.ws != nil {
 		data, _ := json.Marshal(WsData{
@@ -50,6 +52,21 @@ func (p *Player) reset() {
 
 func (p *Player) alive() bool {
 	return !p.Dead
+}
+
+func (p *Player) resetSpeak() {
+	p.Speak = false
+
+	data, _ := json.Marshal(WsData{
+		Cmd:  "resetSpeak",
+		Data: nil,
+	})
+
+	if p.ws != nil {
+		p.ws.WriteMessage(websocket.TextMessage, data)
+	} else {
+		p.reconnectQueue = append(p.reconnectQueue, data)
+	}
 }
 
 func (p *Player) resetTicket() {

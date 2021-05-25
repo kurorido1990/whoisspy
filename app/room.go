@@ -12,6 +12,7 @@ type Room struct {
 	SpyNum     int
 	Gambling   bool
 	Ticket     int
+	Speak      int
 	Players    []*Player
 	Citizens   []*Player
 	Spy        []*Player
@@ -23,6 +24,7 @@ func createRoom(maxLimit int) string {
 		Status:     RoomStatusPrepare,
 		Gambling:   false,
 		Ticket:     0,
+		Speak:      0,
 		TopicIndex: getTopicIndex(),
 		MaxLimit:   maxLimit,
 		SpyNum:     getSpyNum(maxLimit),
@@ -105,6 +107,20 @@ func (r *Room) startGambling() {
 	alivePlayer := r.getAlivePlayer()
 	for _, player := range alivePlayer {
 		player.startGambling(alivePlayer)
+	}
+}
+
+func (r *Room) playerSpeak() {
+	r.Speak++
+
+	if r.Speak == len(r.getAlivePlayer()) {
+		r.startGambling()
+	}
+}
+
+func (r *Room) resetPlayerSpeak() {
+	for _, player := range r.getAlivePlayer() {
+		player.resetSpeak()
 	}
 }
 
@@ -197,6 +213,7 @@ func (r *Room) settlement() {
 	}
 
 	if winner < 1 {
+		r.resetPlayerSpeak()
 		r.resetPlayerVote()
 	} else {
 		for _, player := range r.Players {
