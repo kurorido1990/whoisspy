@@ -211,7 +211,7 @@ func (r *Room) settlement() {
 	if r.getAliveSpy() < 1 {
 		r.Status = RoomStatusEnd
 		winner = Result_CITIZEN_WIN
-	} else if len(r.getAlivePlayer()) <= winNum {
+	} else if len(r.getAlivePlayer()) < winNum {
 		r.Status = RoomStatusEnd
 		winner = Result_SPY_WIN
 	}
