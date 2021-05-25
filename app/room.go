@@ -152,7 +152,7 @@ func (r *Room) kickPlayer(playerID string) {
 		if playerID == player.ID {
 			player.Dead = true
 			kickPlayerName = player.Name
-			return
+			break
 		}
 	}
 
