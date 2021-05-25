@@ -48,7 +48,12 @@ func Run() {
 	server.GET("/getCard/:roomID/:playerID", getCard)
 
 	server.GET("/monitor", func(ctx *gin.Context) {
-		ctx.JSON(Status_OK, roomList)
+		byteRoomList, _ := json.Marshal(roomList)
+		ctx.JSON(http.StatusOK, struct {
+			RoomList string
+		}{
+			RoomList: string(byteRoomList),
+		})
 	})
 	server.GET("/room/:roomID/:playerID", gamePage)
 	server.GET("/resetRoom/:roomID", func(ctx *gin.Context) {
