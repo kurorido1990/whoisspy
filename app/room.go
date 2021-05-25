@@ -113,7 +113,7 @@ func (r *Room) startGambling() {
 func (r *Room) playerSpeak() {
 	r.Speak++
 
-	if r.Speak == len(r.getAlivePlayer()) {
+	if r.Speak >= len(r.getAlivePlayer()) {
 		r.startGambling()
 	}
 }
@@ -133,7 +133,7 @@ func (r *Room) votePlayer(playerID string) {
 		}
 	}
 
-	if r.Ticket == len(r.getAlivePlayer()) {
+	if r.Ticket >= len(r.getAlivePlayer()) {
 		r.stopGambling()
 	}
 }
@@ -230,6 +230,7 @@ func (r *Room) resetGame() {
 	r.Status = Result_Continue
 	r.Gambling = false
 	r.Ticket = 0
+	r.Speak = 0
 
 	r.Players = make([]*Player, 0)
 	r.Spy = make([]*Player, 0)
