@@ -40,14 +40,13 @@ func (p *Player) reset() {
 	p.resetTicket()
 	p.resetSpeak()
 
-	if p.ws != nil {
-		data, _ := json.Marshal(WsData{
-			Cmd:  "reset",
-			Data: nil,
-		})
+	data, _ := json.Marshal(WsData{
+		Cmd:  "reset",
+		Data: nil,
+	})
 
-		p.ws.WriteMessage(websocket.TextMessage, data)
-	}
+	p.ws.WriteMessage(websocket.TextMessage, data)
+	p.reconnectQueue = append(p.reconnectQueue, data)
 }
 
 func (p *Player) alive() bool {
@@ -62,11 +61,8 @@ func (p *Player) resetSpeak() {
 		Data: nil,
 	})
 
-	if p.ws != nil {
-		p.ws.WriteMessage(websocket.TextMessage, data)
-	} else {
-		p.reconnectQueue = append(p.reconnectQueue, data)
-	}
+	p.ws.WriteMessage(websocket.TextMessage, data)
+	p.reconnectQueue = append(p.reconnectQueue, data)
 }
 
 func (p *Player) resetTicket() {
@@ -77,13 +73,10 @@ func (p *Player) resetTicket() {
 func (p *Player) pushLoseMsg() {
 	success := 0
 	for _, data := range p.reconnectQueue {
-		if p.ws != nil {
-			success++
-			p.ws.WriteMessage(websocket.TextMessage, data)
-		}
+		success++
+		p.ws.WriteMessage(websocket.TextMessage, data)
 	}
-
-	p.reconnectQueue = p.reconnectQueue[success:len(p.reconnectQueue)]
+	p.reconnectQueue = [][]byte{}
 }
 
 func (p *Player) startGambling(playerList []*Player) {
@@ -92,11 +85,8 @@ func (p *Player) startGambling(playerList []*Player) {
 		Data: playerList,
 	})
 
-	if p.ws != nil {
-		p.ws.WriteMessage(websocket.TextMessage, data)
-	} else {
-		p.reconnectQueue = append(p.reconnectQueue, data)
-	}
+	p.ws.WriteMessage(websocket.TextMessage, data)
+	p.reconnectQueue = append(p.reconnectQueue, data)
 }
 
 func (p *Player) kickPlayer(kickPlayerName string) {
@@ -105,11 +95,8 @@ func (p *Player) kickPlayer(kickPlayerName string) {
 		Data: kickPlayerName,
 	})
 
-	if p.ws != nil {
-		p.ws.WriteMessage(websocket.TextMessage, data)
-	} else {
-		p.reconnectQueue = append(p.reconnectQueue, data)
-	}
+	p.ws.WriteMessage(websocket.TextMessage, data)
+	p.reconnectQueue = append(p.reconnectQueue, data)
 }
 
 func (p *Player) endVote() {
@@ -118,11 +105,8 @@ func (p *Player) endVote() {
 		Data: nil,
 	})
 
-	if p.ws != nil {
-		p.ws.WriteMessage(websocket.TextMessage, data)
-	} else {
-		p.reconnectQueue = append(p.reconnectQueue, data)
-	}
+	p.ws.WriteMessage(websocket.TextMessage, data)
+	p.reconnectQueue = append(p.reconnectQueue, data)
 }
 
 func (p *Player) settlement(winner int) {
@@ -131,9 +115,6 @@ func (p *Player) settlement(winner int) {
 		Data: winner,
 	})
 
-	if p.ws != nil {
-		p.ws.WriteMessage(websocket.TextMessage, data)
-	} else {
-		p.reconnectQueue = append(p.reconnectQueue, data)
-	}
+	p.ws.WriteMessage(websocket.TextMessage, data)
+	p.reconnectQueue = append(p.reconnectQueue, data)
 }
