@@ -70,13 +70,18 @@ func (p *Player) resetTicket() {
 	p.Ticket = 0
 }
 
+func (p *Player) clearLoseMsg() {
+	p.reconnectQueue = [][]byte{}
+}
+
 func (p *Player) pushLoseMsg() {
 	success := 0
 	for _, data := range p.reconnectQueue {
 		success++
 		p.ws.WriteMessage(websocket.TextMessage, data)
 	}
-	p.reconnectQueue = [][]byte{}
+
+	p.clearLoseMsg()
 }
 
 func (p *Player) startGambling(playerList []*Player) {

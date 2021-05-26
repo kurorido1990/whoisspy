@@ -117,7 +117,7 @@ func Run() {
 
 	server.GET("/addPlayer/:roomID/:name", addPlayer)
 	server.GET("/getCard/:roomID/:playerID", getCard)
-	server.GET("/ws/:roomID/:playerID", func(ctx *gin.Context) {
+	server.GET("/ws/:roomID/:playerID/:reconnect", func(ctx *gin.Context) {
 		c, err := up.Upgrade(ctx.Writer, ctx.Request, nil)
 		if err != nil {
 			log.Println("upgrade :", err)
@@ -131,11 +131,16 @@ func Run() {
 
 		roomID := ctx.Params.ByName("roomID")
 		playerID := ctx.Params.ByName("playerID")
+		reconnect := ctx.Params.ByName("reconnect")
 		if room := getRoom(roomID); room != nil {
 			for _, player := range room.Players {
 				if playerID == player.ID {
 					player.ws = c
-					player.pushLoseMsg()
+					if reconnect == "1" {
+						player.pushLoseMsg()
+					} else {
+						player.clearLoseMsg()
+					}
 					break
 				}
 			}
