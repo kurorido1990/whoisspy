@@ -222,7 +222,7 @@ func (r *Room) settlement() {
 	} else if len(r.getAlivePlayer()) <= winNum {
 		r.Status = RoomStatusEnd
 		winner = Result_SPY_WIN
-	} else if r.Round < 2 {
+	} else if r.Round > 2 {
 		r.Status = RoomStatusEnd
 		winner = Result_SPY_WIN
 	}
