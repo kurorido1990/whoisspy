@@ -16,6 +16,7 @@ type Room struct {
 	Players    []*Player
 	Citizens   []*Player
 	Spy        []*Player
+	Round      int
 }
 
 func createRoom(maxLimit int) string {
@@ -31,6 +32,7 @@ func createRoom(maxLimit int) string {
 		Players:    make([]*Player, 0),
 		Citizens:   make([]*Player, 0),
 		Spy:        make([]*Player, 0),
+		Round:      0,
 	}
 
 	roomList.Store(room.ID, room)
@@ -217,12 +219,16 @@ func (r *Room) settlement() {
 	if r.getAliveSpy() < 1 {
 		r.Status = RoomStatusEnd
 		winner = Result_CITIZEN_WIN
-	} else if len(r.getAlivePlayer()) < winNum {
+	} else if len(r.getAlivePlayer()) <= winNum {
+		r.Status = RoomStatusEnd
+		winner = Result_SPY_WIN
+	} else if r.Round < 2 {
 		r.Status = RoomStatusEnd
 		winner = Result_SPY_WIN
 	}
 
 	if winner < 1 {
+		r.Round++
 		r.resetPlayerSpeak()
 		r.resetPlayerVote()
 	} else {
@@ -241,6 +247,7 @@ func (r *Room) resetGame() {
 	r.Gambling = false
 	r.Ticket = 0
 	r.Speak = 0
+	r.Round = 0
 
 	r.Players = make([]*Player, 0)
 	r.Spy = make([]*Player, 0)
