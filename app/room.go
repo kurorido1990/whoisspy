@@ -110,7 +110,9 @@ func (r *Room) startGambling() {
 
 	alivePlayer := r.getAlivePlayer()
 	for _, player := range alivePlayer {
-		player.startGambling(alivePlayer)
+		if !player.Vote {
+			player.startGambling(alivePlayer)
+		}
 	}
 }
 
@@ -143,6 +145,10 @@ func (r *Room) votePlayer(playerID string) {
 }
 
 func (r *Room) stopGambling() {
+	if !r.Gambling {
+		return
+	}
+
 	r.Gambling = false
 	r.Ticket = 0
 	playerID := ""

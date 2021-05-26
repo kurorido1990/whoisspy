@@ -112,6 +112,19 @@ func (p *Player) kickPlayer(kickPlayerName string) {
 	}
 }
 
+func (p *Player) endVote() {
+	data, _ := json.Marshal(WsData{
+		Cmd:  "endVote",
+		Data: nil,
+	})
+
+	if p.ws != nil {
+		p.ws.WriteMessage(websocket.TextMessage, data)
+	} else {
+		p.reconnectQueue = append(p.reconnectQueue, data)
+	}
+}
+
 func (p *Player) settlement(winner int) {
 	data, _ := json.Marshal(WsData{
 		Cmd:  "settlement",

@@ -56,6 +56,20 @@ func Run() {
 		}
 	})
 
+	server.GET("/endVote/:roomID", func(ctx *gin.Context) {
+		roomID := ctx.Params.ByName("roomID")
+		if room := getRoom(roomID); room != nil {
+			for _, player := range room.Players {
+				player.endVote()
+			}
+			room.stopGambling()
+
+			ctx.JSON(200, "投票通道關閉")
+		} else {
+			ctx.JSON(400, "不知名的原因")
+		}
+	})
+
 	server.GET("/vote/:roomID/:playerID/:voteID", func(ctx *gin.Context) {
 		roomID := ctx.Params.ByName("roomID")
 		playerID := ctx.Params.ByName("playerID")
